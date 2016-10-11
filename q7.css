@@ -1,0 +1,26 @@
+circle {
+	stroke:black;
+	opacity: 0.75;
+}
+
+.axis path,
+.axis line {
+	fill: none;
+	stroke: black;
+	width: 5px
+	shape-rendering: crispEdges;
+}
+.axis text {
+	font-family: sans-serif;
+	font-size: 14px;
+}
+
+.tick line{
+	opacity: 0.2;
+}
+
+.title text{
+	font-family: sans-serif;
+	font-size: 16px;
+}
+
