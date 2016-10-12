@@ -2,7 +2,7 @@
 var width = window.innerWidth*0.8,
 	height = window.innerHeight*0.8;
 
-var margin = {"top":50, "bottom":50, "left":75, "right":75},
+var margin = {"top":50, "bottom":10, "left":75, "right":75},
 	padding = 20,
 	menu_width = width*2/3;
 	menu_padding_x = 25,
@@ -22,8 +22,7 @@ var data_dict = {
 	'ACT Score (25th %)':'ACTCM25',
 	'ACT Score (75th %)':'ACTCM75',
 	'Student Debt ($)':'GRAD_DEBT_MDN_SUPP',
-	'Public Price ($)':'NPT4_PUB',
-	'Private Price ($)':'NPT4_PRIV',
+	'Price ($)':'NPT4',
 	'Federal Loan (%)':'PCTFLOAN',
 	'Pell Grant (%)':'PCTPELL',
 	'Main Degree Awarded':'PREDDEG',
@@ -68,11 +67,10 @@ var dropDownSTATE = menu.append("div")
 	.append("select")
 	.style("position","absolute")
     .attr("name", "state-list")
-   	.attr('class','form-control')
     .on('change',onchangeSTATE)
 menu.append("div")
 	.style("position","absolute")
-	.style("top","" + (menu_padding_y+11) + "px")
+	.style("top","" + (menu_padding_y+7) + "px")
 	.style("left","" + menu_padding_x*3 + "px")
 	.append("text")
 	.text("State:")
@@ -84,11 +82,10 @@ var dropDownX = menu.append("div")
 	.append("select")
 	.style("position","absolute")
     .attr("name", "xaxis-list")
-   	.attr('class','form-control')
     .on('change',onchangeX)
 menu.append("div")
 	.style("position","absolute")
-	.style("top","" + (3*menu_padding_y+11) + "px")
+	.style("top","" + (3*menu_padding_y+7) + "px")
 	.style("left","" + menu_padding_x*3 + "px")
 	.append("text")
 	.text("X Axis:")
@@ -100,11 +97,10 @@ var dropDownY = menu.append("div")
 	.append("select")
 	.style("position","absolute")
     .attr("name", "yaxis-list")
-   	.attr('class','form-control')
     .on('change',onchangeY)
 menu.append("div")
 	.style("position","absolute")
-	.style("top","" + (5*menu_padding_y+11) + "px")
+	.style("top","" + (5*menu_padding_y+7) + "px")
 	.style("left","" + menu_padding_x*3 + "px")
 	.append("text")
 	.text("Y Axis:")
@@ -127,7 +123,8 @@ function data_loop(input,selectValue,initialize) {
 			.data(states).enter()
 			.append('option')
 			.text(function(d) { return state_dict[d]; });
-		dropDownSTATE
+		dropDownSTATE.selectAll(".form-control")
+			.attr("class","form-control")
 			.style("width", "" + select_width + "px")
 			.style("height", "25px")
 
@@ -136,7 +133,8 @@ function data_loop(input,selectValue,initialize) {
 			.data(d3.keys(data_dict)).enter()
 			.append('option')
 			.text(function(d) { return d; });
-		dropDownX
+		dropDownX.selectAll(".form-control")
+			.attr("class","form-control")
 			.style("width", "" + select_width + "px")
 			.style("height", "25px")
 
@@ -145,7 +143,8 @@ function data_loop(input,selectValue,initialize) {
 			.data(d3.keys(data_dict)).enter()
 			.append('option')
 			.text(function(d) { return d; });
-		dropDownY
+		dropDownY.selectAll(".form-control")
+			.attr("class","form-control")
 			.style("width", "" + select_width + "px")
 			.style("height", "25px")
  
