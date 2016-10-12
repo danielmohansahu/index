@@ -220,7 +220,9 @@ function make_scatter(data,x_param,y_param,states) {
 		plot.selectAll("g").remove(); }
 
 	// Filter by state and filter our NULL data
-	data = filter_data(data,x_param,y_param,states);
+	D = filter_data(data,x_param,y_param,states);
+	data = D[0];
+	no_data = D[1];
 
 	// Scales:
 	var x = d3.scale.linear().domain(get_domain(data,data_dict[x_param],0.1,0.1)).rangeRound([padding,width-padding]),
@@ -241,6 +243,13 @@ function make_scatter(data,x_param,y_param,states) {
 		.attr("transform","translate(" + 25 + ",0)")
 		.append("text")
 		.text(gen_title(x_param,y_param,states))
+	if (no_data > 0) {
+		plot.append("g")
+			.attr("transform","translate(" + 75 + "," + 18 + ")")
+			.append("text")
+			.attr("font-size","14px")
+			.text("Not showing " + no_data + " schools without data.")
+	}
 
 	plot.selectAll("circle")
 		.data(data).enter()
@@ -327,6 +336,12 @@ function filter_data (data,x_param,y_param,states) {
 		SELECTED_CHECKBOX.push(checkbox_dict[checkbox_buttons[d].property('name')]);
 	});
 
+
+	data = data.filter(function(d) {
+		var conditional = false;
+		for (state in states) {
+			conditional = conditional || (d['STABBR']===states[state]); }
+		return conditional; })
 	data = data.filter (function(d) {
 		var conditional = true;
 		for (var i = 0; i<SELECTED_CHECKBOX.length;i++) {
@@ -338,17 +353,15 @@ function filter_data (data,x_param,y_param,states) {
 				conditional = conditional && (d[SELECTED_CHECKBOX[i]]==1); }
 		}
 		return conditional;	});
-	data = data.filter(function(d) {
-		var conditional = false;
-		for (state in states) {
-			conditional = conditional || (d['STABBR']===states[state]); }
-		return conditional; })
+
+	var no_data = data.length; 
 	data = data.filter(function(d) {return d[data_dict[x_param]] !== 'NULL';})
 	data = data.filter(function(d) {return d[data_dict[x_param]] !== 'PrivacySuppressed';})
 	data = data.filter(function(d) {return d[data_dict[y_param]] !== 'NULL';})
 	data = data.filter(function(d) {return d[data_dict[y_param]] !== 'PrivacySuppressed';})
+	no_data = no_data - data.length;
 
-	return data;
+	return [data, no_data];
 }
 
 function checkbox_click() {
