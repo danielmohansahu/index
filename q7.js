@@ -7,14 +7,14 @@ var margin = {"top":50, "bottom":10, "left":75, "right":75},
 	menu_width = width*2/3;
 	menu_padding_x = 25,
 	menu_padding_y = 15,
-	menu_height = menu_padding_y*6;
+	menu_height = menu_padding_y*10;
 
 // D3 Transition
 var t = d3.transition()
     .duration(750);
 
 // Initial Display:
-var SELECTED_STATE = 'GA',
+var SELECTED_STATES = ['GA'],
 	SELECTED_X = 'SAT Score',
 	SELECTED_Y = 'Student Debt ($)';
 
@@ -67,6 +67,7 @@ var dropDownSTATE = menu.append("div")
 	.append("select")
 	.style("position","absolute")
     .attr("name", "state-list")
+    .attr("multiple",true)
     .on('change',onchangeSTATE)
 menu.append("div")
 	.style("position","absolute")
@@ -77,7 +78,7 @@ menu.append("div")
 
 var dropDownX = menu.append("div")
 	.style("position","relative")
-	.style("top","" + menu_padding_y*3 + "px")
+	.style("top","" + menu_padding_y*7 + "px")
 	.style("left","" + menu_padding_x*5 + "px")
 	.append("select")
 	.style("position","absolute")
@@ -85,14 +86,14 @@ var dropDownX = menu.append("div")
     .on('change',onchangeX)
 menu.append("div")
 	.style("position","absolute")
-	.style("top","" + (3*menu_padding_y+7) + "px")
+	.style("top","" + (7*menu_padding_y+7) + "px")
 	.style("left","" + menu_padding_x*3 + "px")
 	.append("text")
 	.text("X Axis:")
 
 var dropDownY = menu.append("div")
 	.style("position","relative")
-	.style("top","" + menu_padding_y*5 + "px")
+	.style("top","" + menu_padding_y*9 + "px")
 	.style("left","" + menu_padding_x*5 + "px")
 	.append("select")
 	.style("position","absolute")
@@ -100,7 +101,7 @@ var dropDownY = menu.append("div")
     .on('change',onchangeY)
 menu.append("div")
 	.style("position","absolute")
-	.style("top","" + (5*menu_padding_y+7) + "px")
+	.style("top","" + (9*menu_padding_y+7) + "px")
 	.style("left","" + menu_padding_x*3 + "px")
 	.append("text")
 	.text("Y Axis:")
@@ -150,17 +151,17 @@ function data_loop(input,selectValue,initialize) {
  
 
 		if (input === 'initialize') {
-			make_scatter(data,SELECTED_X,SELECTED_Y,SELECTED_STATE);}
+			make_scatter(data,SELECTED_X,SELECTED_Y,SELECTED_STATES);}
 		else if (input === 'STATE') {
 			make_scatter(data,SELECTED_X,SELECTED_Y,selectValue);}
 		else if (input === 'X') {
-			make_scatter(data,selectValue,SELECTED_Y,SELECTED_STATE);}
+			make_scatter(data,selectValue,SELECTED_Y,SELECTED_STATES);}
 		else if (input === 'Y') {
-			make_scatter(data,SELECTED_X,selectValue,SELECTED_STATE);}
+			make_scatter(data,SELECTED_X,selectValue,SELECTED_STATES);}
 	})
 };
 
-function make_scatter(data,x_param,y_param,state) {
+function make_scatter(data,x_param,y_param,states) {
 	// Clear old plot:
 	if (typeof plot !== 'undefined' && plot) {
 		plot.selectAll("circle")
@@ -170,15 +171,19 @@ function make_scatter(data,x_param,y_param,state) {
 		plot.selectAll("g").remove(); }
 
 	// Filter by state and filter our NULL data
-	data = data.filter(function(d) {return d['STABBR']===state;});
+	data = data.filter(function(d) {
+		var conditional = false;
+		for (state in states) {
+			conditional = conditional || (d['STABBR']===states[state]); }
+		return conditional; })
 	data = data.filter(function(d) {return d[data_dict[x_param]] !== 'NULL';})
 	data = data.filter(function(d) {return d[data_dict[x_param]] !== 'PrivacySuppressed';})
 	data = data.filter(function(d) {return d[data_dict[y_param]] !== 'NULL';})
 	data = data.filter(function(d) {return d[data_dict[y_param]] !== 'PrivacySuppressed';})
 
 	// Scales:
-	var x = d3.scale.linear().domain(get_domain(data,data_dict[x_param],0.1)).rangeRound([padding,width-padding]),
-		y = d3.scale.linear().domain(get_domain(data,data_dict[y_param],0.1)).rangeRound([height-padding-menu_height,padding]);
+	var x = d3.scale.linear().domain(get_domain(data,data_dict[x_param],0.1,0.1)).rangeRound([padding,width-padding]),
+		y = d3.scale.linear().domain(get_domain(data,data_dict[y_param],0.3,0.1)).rangeRound([height-padding-menu_height,padding]);
 
 	var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(4).innerTickSize(-height+menu_height+padding*2),
 		yAxis = d3.svg.axis().scale(y).orient("left").ticks(4).innerTickSize(-width + padding*2);
@@ -189,12 +194,12 @@ function make_scatter(data,x_param,y_param,state) {
 		.attr("height", height)
 		.append("g")
 		.attr("transform","translate(" + margin.left + "," + (margin.top + menu_height) + ")")
-		
+	
 	plot.append("g")
 		.attr("class","title")
 		.attr("transform","translate(" + 25 + ",0)")
 		.append("text")
-		.text(y_param + " vs. " + x_param + ' for ' + state_dict[state])
+		.text(gen_title(x_param,y_param,states))
 
 	plot.selectAll("circle")
 		.data(data).enter()
@@ -204,7 +209,9 @@ function make_scatter(data,x_param,y_param,state) {
 		.attr("r",0)
 		.attr("stroke","ghostwhite")
 		.append("title")
-		.text(function(d) {return (d.INSTNM + "\n" + d.UGDS + " enrolled") ; })
+		.text(function(d) {
+			return (d.INSTNM + "\n" + d.CITY + ", " + d.STABBR + "\n" + d.UGDS + " enrolled") ; 
+		})
 
 	plot.selectAll("circle")
 		.transition()
@@ -268,14 +275,15 @@ function make_scatter(data,x_param,y_param,state) {
 		.attr("y",padding*2+3)
 		.style("font-size","12px")
 		.text("Public")
-
 }
 
 /////////////// HELPER FUNCTIONS ///////////////
 
 function onchangeSTATE() {
-	SELECTED_STATE = state_dict_reverse[d3.select(this).property('value')];
-	data_loop('STATE',SELECTED_STATE);};
+	SELECTED_STATES = []
+	getSelected(dropDownSTATE).forEach(function(d) {
+		SELECTED_STATES.push(state_dict_reverse[d]); });
+	data_loop('STATE',SELECTED_STATES);};
 
 function onchangeX() {
 	SELECTED_X = d3.select(this).property('value');
@@ -284,6 +292,26 @@ function onchangeX() {
 function onchangeY() {
 	SELECTED_Y = d3.select(this).property('value');
 	data_loop('Y',SELECTED_Y); }
+
+function getSelected(select) {
+	var result = [];
+	var options = select.property('options');
+	for (opt in options) {
+		if (options[opt].selected) {
+			result.push(options[opt].value); } }
+	return result; }
+
+function gen_title(x_param,y_param,states) {
+	var title = y_param + " vs. " + x_param + ' for ';
+	if (states.length > 3) {title = title + "multiple States";}
+	else {
+		for (var i = 0; i<(states.length-1); i++) {
+			title = title + state_dict[states[i]] + ", ";
+		}
+		title = title + state_dict[states[states.length-1]];
+	}
+	return title;
+}
 
 function get_unique_vals(DATA,field) {
 	var vals = [];
@@ -295,10 +323,10 @@ function uniquify(array) {
 	return array.filter(function(d,i,self) {
 		return self.lastIndexOf(d)===i}); }
 
-function get_domain(data,parameter,pad) {
+function get_domain(data,parameter,pad_low,pad_high) {
 	var max = -Infinity,
 		min = Infinity;
 	data.forEach(function(d) {
 		max = d3.max([+d[parameter],max]);
 		min = d3.min([+d[parameter],min]);})
-	return [min*(1-pad), max*(1+pad)]; }
+	return [min*(1-pad_low), max*(1+pad_high)]; }
