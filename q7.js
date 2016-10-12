@@ -38,7 +38,7 @@ var checkbox_dict = {
 	'Women Only':'WOMENONLY',
 	'Men Only':'MENONLY',
 	'Public Only':'PUBLIC',
-	'Private ONly':'PRIVATE',
+	'Private Only':'PRIVATE',
 	'Historically Black':'HBCU',
 	'Primarily Black':'PBI',
 	'Tribal':'TRIBAL',
