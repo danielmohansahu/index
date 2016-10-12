@@ -243,13 +243,18 @@ function make_scatter(data,x_param,y_param,states) {
 		.attr("transform","translate(" + 25 + ",0)")
 		.append("text")
 		.text(gen_title(x_param,y_param,states))
-	if (no_data > 0) {
+	if (data.length == 0) {
 		plot.append("g")
 			.attr("transform","translate(" + 75 + "," + 18 + ")")
 			.append("text")
 			.attr("font-size","14px")
-			.text("Not showing " + no_data + " schools without data.")
-	}
+			.text("No data.") }
+	else if (no_data > 0) {
+		plot.append("g")
+			.attr("transform","translate(" + 75 + "," + 18 + ")")
+			.append("text")
+			.attr("font-size","14px")
+			.text("Not showing " + no_data + " schools without data.") }
 
 	plot.selectAll("circle")
 		.data(data).enter()
@@ -335,7 +340,6 @@ function filter_data (data,x_param,y_param,states) {
 	get_checked(checkbox_buttons).forEach(function(d) {
 		SELECTED_CHECKBOX.push(checkbox_dict[checkbox_buttons[d].property('name')]);
 	});
-
 
 	data = data.filter(function(d) {
 		var conditional = false;
