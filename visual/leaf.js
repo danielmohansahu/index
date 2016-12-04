@@ -54,18 +54,22 @@ var num_healthy = 3007,
 // true: highlight user biometric path; false: don't highlight
 var highlight_flag = true,
     highlighted = false,    // Used to only update once
-    recommend_flag = false,
     recommended = false;
+
+// Convert string to boolean
+if (sessionStorage.recommend_flag == "true") {
+  var recommend_flag = true;
+} else {
+  var recommend_flag = false;
+}
 
 var margin = {top: 20, right: 120, bottom: 20, left: 180},
     width = 1400 - margin.right - margin.left,
-    height = 700 - margin.top - margin.bottom;
+    height = 600 - margin.top - margin.bottom;
 
 var i = 0,
     counter = 0,
     root;
-
-var col = d3.scale.linear().domain([0,0.5]).range(["green","red"]);
 
 // Tree
 var tree = d3.layout.tree()
@@ -94,8 +98,6 @@ d3.json("../tree.json", function(error, flare) {
   root.children.forEach(collapse);
   update(root);
 
-  console.log(sessionStorage.recommendation)
-
 });
 
 //////////////////////////////// FUNCTIONS ////////////////////////////////
@@ -120,21 +122,6 @@ function update(source) {
 
   nodeEnter.append("circle")
 
-  // Add name:
-  nodeEnter.append("text")
-      .attr("x", function(d) { return d.children || d._children ? -16 : 10; })
-      .attr("dy", ".35em")
-      .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
-      .text(function(d) {
-        if (d.is_leaf == 0) {
-          if (d.feature_type == "numeric") {
-            return d.name + " under " + d.threshold.toFixed(1) + " " + d.units + "?";
-          } else {
-            return d.name + "?";
-          }
-        }
-      })
-
   nodeEnter.append("title")
       .text(function(d) {return hover_text(d)});
 
@@ -152,8 +139,15 @@ function update(source) {
         if (d._children) {
           return "#cce6ff"; }
         else if (d.is_leaf == 1) {
-          return col(d.num_positive/(d.num_positive+(d.num_negative*(total_healthy/num_healthy)))) }
-        else {
+          if(calc_probability(d) > 0.5) {
+            return "red"
+          } else if (calc_probability(d) > 0.1) {
+            return "#e6b800"
+          } else {
+            return "green"
+          }
+          // return col(calc_probability(d)) }
+        } else {
           return "#fff"; }
       })
       .style("stroke","#b3d9ff");
@@ -201,6 +195,7 @@ function update(source) {
   
   // Update link colors:
   link.style("stroke",function(d) {
+    counter = counter + 1;
     // Change color if it's a patient's biometric path or recommended path:
     if (recommend_flag) {
       if (d.target.recommend == 1 & d.source.recommend == 1 ) { return "#cc5200"; }
@@ -208,13 +203,33 @@ function update(source) {
     }
 
     // Default colors are red and green:
-    counter = counter + 1;
     if (counter%2 > 0.5) {
       return "#006600";
     } else {
       return "#800000"; }
   })
   link.style("opacity",0.4)
+
+  // Add name:
+  nodeEnter.append("text")
+    .attr("x", function(d) { return d.children || d._children ? -16 : 16; })
+    .attr("dy", ".35em")
+    .attr("text-anchor", function(d) { return d.children || d._children ? "end" : "start"; })
+    .text(function(d) {
+      if (d.is_leaf == 0) {
+        if (d.feature_type == "numeric") {
+          if (d.name == "Age") {
+            return d.name + " under " + d.threshold.toFixed(0) + " " + d.units + "?";  
+          } else {
+            return d.name + " under " + d.threshold.toFixed(1) + " " + d.units + "?";
+          }
+        } else {
+          return d.name + "?";
+        }
+      } else {
+        if (d.highlight == 1) {return (calc_probability(d)*100).toFixed(1) + "% chance of HD"}
+      }
+    })
 }
 
 // Toggle children on click.
@@ -239,7 +254,7 @@ function collapse(d) {
 
 function hover_text(d) {
   if (d.is_leaf == 1) {
-    return calc_probability(d)*100 + "% chance of Heart Disease" + "\n" + "Healthy: " + (d.num_negative*(total_healthy/num_healthy)).toFixed() + "\n" + "Diseased: " + d.num_positive;
+    return (calc_probability(d)*100).toFixed(2) + "% chance of Heart Disease" + "\n" + "Healthy: " + (d.num_negative*(total_healthy/num_healthy)).toFixed() + "\n" + "Diseased: " + d.num_positive;
   } else {
     return d.name + "\n" + "Healthy: " + (d.num_negative*(total_healthy/num_healthy)).toFixed() + "\n" + "Diseased: " + d.num_positive + "\n" + "Importance: " + importance[d.name].toFixed(2);    
   }
@@ -253,18 +268,18 @@ function calc_probability(d) {
 
 function highlight_path(d) {
 // Function to highlight the path that our user biometrics would follow:
-  if(d.target.highlight == 1) {
+  if (d.target.recommend == 1) {
+    if(d.target.is_leaf == 0 && recommended == false) {
+      click(d.target)
+    } else if (d.target.is_leaf == 1) {
+      recommended = true;
+    }
+    return 7.5;
+  } else if(d.target.highlight == 1) {
     if(d.target.is_leaf == 0 && highlighted == false) {
       click(d.target)
     } else if (d.target.is_leaf == 1) {
       highlighted = true;
-    }
-    return 7.5;
-  } else if (d.target.recommend == 1) {
-    if(d.target.is_leaf == 0 && recommended == false) {
-      click(d.target)
-    } else if (d.target.is_leaf == 1) {
-      console.log("hi")
     }
     return 7.5;
   } else {

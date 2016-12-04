@@ -14,15 +14,15 @@ function createTree(data,loc){
 <head>
 <style>
 label{
-    margin: auto;
-    width: 30%;
+    
+    width: 100%;
     display: block;
     position: relative;
     font-weight: bold;
 }
 input[type=text], select {
-    margin: auto;
-    width: 30%;
+    
+    width: 100%;
     margin-bottom: 10px;
     padding: 12px 20px;
     /*margin: 8px 0;*/
@@ -93,9 +93,28 @@ div #tree{
   display: block;
 }
 
+div #col1,#col2,#col3{
+  position: relative;
+  float: left;
+  margin-left: 14%;
+}
+
+div #submitButton{
+ 
+}
+/*#leftDiv{
+
+  float:left;*/
+
+/*}
+
+#rightDiv{
+
+  float:right;
+
+}*/
 
 </style>
-<!-- <link rel="stylesheet" type="text/css" href="style.css"> -->
 <script src="//d3js.org/d3.v3.min.js"></script>
 
 <link rel="stylesheet" type="text/css" href="leaf.css">
@@ -106,13 +125,15 @@ div #tree{
 
 <h1>Heart Disease Risk Estimator</h1>
 
-<h2>Try out our basic version here.</h2>
-<p align="center"> For more accurate predictions, click here to try out our advanced version<p>
-<button id="myButton">Advanced</button>
-<div id="user">
+<h2>Try out our advanced version here.</h2>
+<p align="center"> You can also try our basic version by clicking on the following button.<p>
+<button type="button" id="myButton">Basic</button>
+
 
   <form name="userMetrics">
-    <label for="gender">Gender</label>
+  <div id="user">
+    <div id="col1">
+      <label for="gender">Gender</label>
       <select id="gender" name="gender">
         <option value="Male">Male</option>
         <option value="Female">Female</option>
@@ -141,29 +162,91 @@ div #tree{
       <label for="bp">Systolic Blood Pressure (mmhg)<a target="_blank" href="#" title="Your systolic blood pressure is the higher value in your blood pressure reading"><img src="http://www.drodd.com/images15/question-mark15.jpg" height="13px"/></a></label>
       <input type="text" id="bp" name="bp">
       
-      <label for="chol">Total Cholesterol (mg/dl)</label>
-      <input type="text" id="chol" name="chol">
+       <label for="bp_">Diastolic BP (mmHg) <a target="_blank" href="#" title="Your diastolic blood pressure is the lower value in your blood pressure reading"><img src="http://www.drodd.com/images15/question-mark15.jpg" height="13px"/></a></label>
+        <input type="text" id="bp_" name="bp_">
 
-      <label for="smoker">Are you a smoker?</label>
+
+      
+
+    
+    </div>
+
+      <div id="col2">
+        
+        <label for="co2">Carbon Dioxide (mmol/L)</label>
+        <input type="text" id="co2" name="co2">
+
+        <label for="K">Potassium (mmol/L)</label>
+        <input type="text" id="K" name="K">
+
+        <label for="urea">Glucose(mg/dl)</label>
+        <input type="text" id="urea" name="urea">
+        
+
+        <label for="hb">Hemoglobin A1c (%)</label>
+        <input type="text" id="hb" name="hb">
+        
+
+        <label for="co2">Sodium (mmol/L)</label>
+        <input type="text" id="co2" name="co2">
+        
+
+        <label for="ca">Calcium (mg/dl)</label>
+        <input type="text" id="ca" name="ca">
+
+        
+        
+        
+      </div>
+
+      <div id="col3">
+
+        <label for="smoker">Are you a smoker?</label>
         <select id="smoker" name="smoker">
           <option value="Yes">Yes</option>
           <option value="No">No</option>
         
         </select>
 
-    <input type="submit" value="Submit">
+        <label for="cl">Chloride (mmol/L)</label>
+        <input type="text" id="cl" name="cl">
+
+        <label for="ldl">LDL Cholesterol (mg/dl)</label>
+        <input type="text" id="ldl" name="ldl">
+
+        <label for="hdl">HDL Cholesterol (mg/dl)</label>
+        <input type="text" id="hdl" name="hdl">
+        
+
+        <label for="creat">Creatinine (mg/dl)</label>
+        <input type="text" id="creat" name="creat">
+        
+
+        <label for="tri">Triglycerides (mg/dl)</label>
+        <input type="text" id="tri" name="tri">
+        
+        <label for="urea">Urea Nitrogen (mg/dl)</label>
+        <input type="text" id="urea" name="urea">
+        
+        
+      </div>
+
+    </div>
+
+    <div>
+      <input type="submit" value="Submit">
+    </div>
+
   </form>
-</div>
+
 
 <div id="tree">
-
+<!--  Tree is displayed here -->
 </div>
 
 <div id="recommendations">
-
+<!-- Recommendation button gies here -->
 </div>
-
-
 
 <script>
 
@@ -174,6 +257,7 @@ $( "form" ).submit(function(event) {
   $("#recommendations").empty();
   var data = $( this ).serializeArray();
   event.preventDefault();
+
 
   ///////////////// VALIDATION BEGINS /////////////////////////////
   flag = true;
@@ -211,33 +295,44 @@ $( "form" ).submit(function(event) {
       sessionStorage.female = 0;
       sessionStorage.male = 1;
     } else if (data[0]["value"]=="Female") {
-      sessionStorage.female = 1;  
+      sessionStorage.female = 1;
       sessionStorage.male = 0;  }
-    sessionStorage.height = Number(height);
-    sessionStorage.weight = 0.45*Number(data[2]["value"]);
-    sessionStorage.age = Number(data[1]["value"]);
+	  sessionStorage.height = Number(height);
+	  sessionStorage.weight = 0.45*Number(data[2]["value"]);
+	  sessionStorage.age = Number(data[1]["value"]);
     sessionStorage.blood_pressure = Number(data[5]["value"]);
-    sessionStorage.cholesterol = Number(data[6]["value"]);
+    sessionStorage.bp_ = Number(data[6]["value"]);
 
-    sessionStorage.hdl = Number(65);
-    sessionStorage.ldl = Number(100);
-	  sessionStorage.creatinine = Number(0.6);
-	  sessionStorage.calcium = Number(10);
-	  sessionStorage.potassium = Number(4);
-	  sessionStorage.bmi = sessionStorage.weight/Math.pow(height/100,2);
-    console.log(sessionStorage.weight);
-    sessionStorage.glucose = Number(110);
-    sessionStorage.sodium = Number(140);
+    sessionStorage.co2 = Number(data[7]["value"]);
+    sessionStorage.potassium = Number(data[8]["value"]);
+    sessionStorage.glucose = Number(data[9]["value"]);
+    sessionStorage.hemoglobin_a1c = Number(data[10]["value"]);
+    sessionStorage.sodium = Number(data[11]["value"]);
+    sessionStorage.calcium = Number(data[12]["value"]);
+    
+
     sessionStorage.smoker = Number(0);
-    if (data[7]["value"]=="Yes")
+    if (data[13]["value"]=="Yes")
       sessionStorage.smoker = Number(1);
-    sessionStorage.hemoglobin_a1c = Number(5);
+    sessionStorage.chloride = Number(data[14]["value"]);
+    sessionStorage.ldl = Number(data[15]["value"]);
+    sessionStorage.hdl = Number(data[16]["value"]);
+	  sessionStorage.creatinine = Number(data[17]["value"]);
+	  sessionStorage.tri = Number(data[18]["value"]);
+    sessionStorage.urea = Number(data[19]["value"]);
+    
+	  sessionStorage.bmi = sessionStorage.weight/Math.pow(height/100,2);
+    sessionStorage.cholesterol = sessionStorage.ldl + sessionStorage.hdl + sessionStorage.tri/5;
     sessionStorage.recommend_flag = false;
+  
+    
+
 	  // Run leaf.js script
 	  $.getScript('leaf.js');
 	  $('html, body').animate({
         scrollTop: $("#tree").offset().top
     }, 200);
+
     var btn = document.createElement("BUTTON");        // Create a <button> element
     var t = document.createTextNode("Recommendations");       // Create a text node
     btn.appendChild(t);  
@@ -245,26 +340,20 @@ $( "form" ).submit(function(event) {
     document.getElementById("recommendations").appendChild(btn);
     function sendRecommendation(){
       sessionStorage.recommend_flag = true;
-      $(sessionStorage.location).empty();
-      $.getScript('leaf.js');
-      $('html, body').animate({
-        scrollTop: $("#tree").offset().top
-    }, 200);
-      $("#recommendations").empty();
+      console.log("here");
     }
   }
 });
 
 </script>
 <script>
-  
+
     document.getElementById("myButton").onclick = function () {
-        location.href = "inputAdvanced.html";
+        location.href = "inputForm.html";
     };
 
 
 </script>
-
 </body>
 </html>
 
