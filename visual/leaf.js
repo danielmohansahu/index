@@ -65,7 +65,7 @@ if (sessionStorage.recommend_flag == "true") {
 
 var margin = {top: 20, right: 120, bottom: 20, left: 180},
     width = 1400 - margin.right - margin.left,
-    height = 600 - margin.top - margin.bottom;
+    height = 700 - margin.top - margin.bottom;
 
 var i = 0,
     counter = 0,
