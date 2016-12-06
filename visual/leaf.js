@@ -83,8 +83,70 @@ var diagonal = d3.svg.diagonal()
 var svg = d3.select(sessionStorage.location).append("svg")
     .attr("width", width + margin.right + margin.left)
     .attr("height", height + margin.top + margin.bottom)
-  .append("g")
+    .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var legend_data = [ "Original path", "Recommended path", 
+"False branch", "True branch", "True values corressponding to user metrics", "False values corressponding to user metrics"];
+
+
+
+var legend = svg.append("g")
+             .attr("class", "legend")
+             .attr("height", 100)
+             .attr("width", 100)
+             .attr("transform", "translate(-20,50)");
+
+legend.selectAll('rect')
+    .data(legend_data)
+    .enter()
+    .append('rect')
+    .attr("x",0)
+    .attr("y", function(d,i) { return height -80 - i*20;})
+    .attr("height", 7.5)
+    .attr("width", 25)
+    .style("fill", function(d){
+
+        if (d == "False branch" || d == "False values corressponding to user metrics") {
+            return "#800000";
+        } else if (d == "True branch" || d == "True values corressponding to user metrics") {
+            return "#006600";
+        } else if (d == "Recommended path") {
+            return "#cc5200";
+        } else if (d == "Original path") {
+            return "#000000";
+        }
+        else{
+        	return "#006600";
+        }
+    })
+    .style("opacity", 0.4)
+    .style("stroke", "#f2f2f2")
+    .style("stroke-width", function(d){
+    	debugger;
+        if (d == "False branch" || d == "True branch"){
+        	return 5;
+        }
+        else return 0;
+
+    });
+
+
+
+legend.selectAll('text')
+    .data(legend_data)
+    .enter()
+    .append("text")
+    .attr("x", 30)
+    .attr("y", function(d, i){ return height - 71 - (i*20);})
+    .text( function(d) {
+        if (d.split(" ")[0] == "Recommended") {
+            return "Recommended path (click 'Recommendations')";
+        } else {
+            return d;
+        } });
+
+
 
 //////////////////////////////// UPDATE SYSTEM ////////////////////////////////
 
